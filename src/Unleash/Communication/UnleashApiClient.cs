@@ -15,6 +15,9 @@ using Unleash.Internal;
 using Unleash.Logging;
 using Unleash.Metrics;
 using Unleash.Streaming;
+#if NET8_0_OR_GREATER
+using Unleash.Serialization;
+#endif
 
 namespace Unleash.Communication
 {
@@ -196,7 +199,11 @@ namespace Unleash.Communication
             using (var request = new HttpRequestMessage(HttpMethod.Post, requestUri))
             {
                 registration.ConnectionId = clientRequestHeaders.ConnectionId;
+#if NET8_0_OR_GREATER
+                request.Content = new StringContent(JsonSerializer.Serialize(registration, UnleashJsonSerializerContext.Default.ClientRegistration), Encoding.UTF8, "application/json");
+#else
                 request.Content = new StringContent(JsonSerializer.Serialize(registration, options), Encoding.UTF8, "application/json");
+#endif
 
                 SetRequestHeaders(request, clientRequestHeaders);
 
@@ -236,7 +243,11 @@ namespace Unleash.Communication
 
             using (var request = new HttpRequestMessage(HttpMethod.Post, requestUri))
             {
+#if NET8_0_OR_GREATER
+                request.Content = new StringContent(JsonSerializer.Serialize(clientMetrics, UnleashJsonSerializerContext.Default.ClientMetrics), Encoding.UTF8, "application/json");
+#else
                 request.Content = new StringContent(JsonSerializer.Serialize(clientMetrics, options), Encoding.UTF8, "application/json");
+#endif
 
                 SetRequestHeaders(request, clientRequestHeaders);
                 request.Headers.TryAddWithoutValidation("Unleash-Interval", clientRequestHeaders.SendMetricsInterval.TotalMilliseconds.ToString());
