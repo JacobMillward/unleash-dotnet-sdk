@@ -31,6 +31,11 @@ namespace Unleash
         ///// <param name="strategies">Custom strategies.</param>
         public DefaultUnleash(UnleashSettings settings, params IStrategy[] strategies)
         {
+#if NET8_0_OR_GREATER
+            if (settings.LoggerFactory != null)
+                Logging.LogProvider.SetLoggerFactory(settings.LoggerFactory);
+#endif
+
             var currentInstanceNo = Interlocked.Increment(ref InitializedInstanceCount);
 
             this.settings = settings;
